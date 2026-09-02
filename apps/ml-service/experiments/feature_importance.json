@@ -1,0 +1,36 @@
+{
+  "LogisticRegression_top15": {
+    "failure_type_RISK_REJECTED": 3.3318,
+    "failure_type_TRANSIENT_NETWORK_TIMEOUT": 2.6881,
+    "failure_type_INVALID_ACCOUNT": 1.862,
+    "failure_type_INSUFFICIENT_FUNDS": 1.7894,
+    "customer_id_cust_691": 1.6641,
+    "customer_id_cust_106": 1.4566,
+    "customer_id_cust_991": 1.4502,
+    "customer_id_cust_694": 1.4288,
+    "customer_id_cust_372": 1.4225,
+    "customer_id_cust_77": 1.3666,
+    "customer_id_cust_380": 1.3495,
+    "customer_id_cust_631": 1.3292,
+    "customer_id_cust_387": 1.3114,
+    "customer_id_cust_751": 1.2865,
+    "customer_id_cust_607": 1.2476
+  },
+  "RandomForestClassifier_top15": {
+    "failure_type_TRANSIENT_NETWORK_TIMEOUT": 0.1506,
+    "failure_type_INVALID_ACCOUNT": 0.1396,
+    "failure_type_CARD_EXPIRED": 0.1269,
+    "failure_type_RISK_REJECTED": 0.1195,
+    "retry_count": 0.0591,
+    "failure_type_INSUFFICIENT_FUNDS": 0.033,
+    "customer_success_rate": 0.0283,
+    "customer_segment_at_risk": 0.0167,
+    "customer_successful_transactions": 0.0161,
+    "customer_total_spend": 0.0155,
+    "checkout_duration_seconds": 0.015,
+    "amount": 0.0137,
+    "days_since_last_success": 0.0111,
+    "customer_failed_transactions": 0.011,
+    "customer_total_transactions": 0.0102
+  }
+}

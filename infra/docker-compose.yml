@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: recoverai-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-recoverai_db}
+      POSTGRES_USER: ${POSTGRES_USER:-recoverai_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-recoverai_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-recoverai_user} -d ${POSTGRES_DB:-recoverai_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  ml-service:
+    build:
+      context: ../apps/ml-service
+    container_name: recoverai-ml-service
+    ports:
+      - "${ML_SERVICE_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  backend:
+    build:
+      context: ../apps/backend
+    container_name: recoverai-backend
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-recoverai_db}
+      DATABASE_USERNAME: ${POSTGRES_USER:-recoverai_user}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-recoverai_password}
+      ML_SERVICE_URL: http://ml-service:8000
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-recoverai_webhook_secret_demo}
+      RECOVERAI_EXECUTION_MODE: ${RECOVERAI_EXECUTION_MODE:-DRY_RUN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ml-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/v1/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ../apps/frontend
+      args:
+        VITE_BACKEND_URL: http://localhost:${BACKEND_PORT:-8080}
+    container_name: recoverai-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      backend:
+        condition: service_started
+
+volumes:
+  postgres_data:

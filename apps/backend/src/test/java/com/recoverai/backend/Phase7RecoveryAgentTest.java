@@ -166,4 +166,34 @@ class Phase7RecoveryAgentTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error.code").value("RESOURCE_NOT_FOUND"));
     }
+
+    @Test
+    @DisplayName("5. createDefaultPolicy uses Merchant configured values rather than hardcoded defaults")
+    void testCreateDefaultPolicyInheritsMerchantValues() {
+        // Remove the existing policy to force createDefaultPolicy()
+        recoveryPolicyRepository.deleteAll();
+
+        // Update merchant with specific non-default limits
+        merchant.setMinRecoveryProbability(new BigDecimal("0.1234"));
+        merchant.setMaxRetryCount(7);
+        merchant.setAutomaticActionLimit(new BigDecimal("12345.0000"));
+        merchant.setHumanApprovalThreshold(new BigDecimal("98765.0000"));
+        merchant.setAutoRecoveryEnabled(false);
+        merchantRepository.save(merchant);
+
+        // This will trigger createDefaultPolicy
+        recoveryAnalysisService.analyzeRecoveryCase(recoveryCase.getId());
+
+        // Fetch the newly created policy
+        List<RecoveryPolicy> policies = recoveryPolicyRepository.findAll();
+        assertEquals(1, policies.size());
+        RecoveryPolicy newPolicy = policies.get(0);
+
+        // Should match merchant configured values, not defaults
+        assertEquals(0, new BigDecimal("0.1234").compareTo(newPolicy.getMinRecoveryProbability()));
+        assertEquals(7, newPolicy.getMaxRetryCount());
+        assertEquals(0, new BigDecimal("12345.0000").compareTo(newPolicy.getAutomaticActionLimit()));
+        assertEquals(0, new BigDecimal("98765.0000").compareTo(newPolicy.getHumanApprovalThreshold()));
+        assertFalse(newPolicy.getAutoRecoveryEnabled());
+    }
 }

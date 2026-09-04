@@ -152,12 +152,12 @@ public class RecoveryAnalysisService {
     private RecoveryPolicy createDefaultPolicy(Merchant merchant) {
         RecoveryPolicy policy = new RecoveryPolicy();
         policy.setMerchant(merchant);
-        policy.setMaxRetryCount(3);
-        policy.setMinRecoveryProbability(new BigDecimal("0.6000"));
-        policy.setAutomaticActionLimit(new BigDecimal("50000.0000"));
-        policy.setHumanApprovalThreshold(new BigDecimal("100000.0000"));
+        policy.setMaxRetryCount(merchant.getMaxRetryCount() != null ? merchant.getMaxRetryCount() : 3);
+        policy.setMinRecoveryProbability(merchant.getMinRecoveryProbability() != null ? merchant.getMinRecoveryProbability() : new BigDecimal("0.6000"));
+        policy.setAutomaticActionLimit(merchant.getAutomaticActionLimit() != null ? merchant.getAutomaticActionLimit() : new BigDecimal("50000.0000"));
+        policy.setHumanApprovalThreshold(merchant.getHumanApprovalThreshold() != null ? merchant.getHumanApprovalThreshold() : new BigDecimal("100000.0000"));
         policy.setCooldownMinutes(60);
-        policy.setAutoRecoveryEnabled(true);
+        policy.setAutoRecoveryEnabled(merchant.getAutoRecoveryEnabled() != null ? merchant.getAutoRecoveryEnabled() : true);
         return recoveryPolicyRepository.save(policy);
     }
 
